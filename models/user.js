@@ -10,16 +10,22 @@ var UserSchema = new mongoose.Schema({
     required: true
   },
   password: {
-    type: String,
-    required: true
+    type: String
+    //required: true
+  },
+  facebook: {
+    id: String,
+    token: String,
+    email: String,
+    name: String
   }
 });
 
-// Saves the user's password hashed (plain text password storage is not good)
-UserSchema.pre('save', function (next) {
+// Saves the user's password hashed
+UserSchema.pre('save', function(next) {
   var user = this;
   if (this.isModified('password') || this.isNew) {
-    bcrypt.genSalt(10, function (err, salt) {
+    bcrypt.genSalt(10, function(err, salt) {
       if (err) {
         return next(err);
       }

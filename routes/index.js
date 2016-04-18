@@ -69,4 +69,26 @@ router.post('/api/authenticate', function(req, res, next) {
 	})(req, res, next);
 });
 
+router.get('/auth/facebook',
+	passport.authenticate('facebook', {
+		session: false,
+		scope: []
+	})
+);
+
+router.get('/auth/facebook/callback', passport.authenticate('facebook', {
+	session: false,
+	failureRedirect: '/'
+}), function(req, res) {
+	console.log('Generating jwt token for ' + req.user.facebook.id);
+	var token = jwt.sign(req.user, config.secret, {
+		expiresIn: 10080 // in seconds
+	});
+	res.json({
+		success: true,
+		token: 'JWT ' + token
+	});
+
+});
+
 module.exports = router;

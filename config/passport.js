@@ -85,11 +85,26 @@ module.exports = function(passport) {
             // if there is no user found with that facebook id, create them
             var newUser = new User();
 
+            console.log(JSON.stringify(profile));
+
             // set all of the facebook information in our user model
-            newUser.facebook.id = profile.id; // set the users facebook id                   
-            newUser.facebook.token = token; // we will save the token that facebook provides to the user                    
-            newUser.facebook.name = profile.name.givenName + ' ' + profile.name.familyName; // look at the passport user profile to see how names are returned
-            newUser.facebook.email = profile.emails[0].value; // facebook can return multiple emails so we'll take the first
+            if(profile.id){
+              newUser.facebook.id = profile.id; // set the users facebook id                   
+              console.log('Id: ' + profile.id);
+            }
+            if(profile.name){
+              newUser.facebook.name = profile.name.givenName + ' ' + profile.name.familyName; // look at the passport user profile to see how names are returned
+            }
+            if(profile.emails && profile.emails.length > 0){
+              newUser.email = profile.emails[0].value;
+              newUser.facebook.email = profile.emails[0].value; // facebook can return multiple emails so we'll take the first
+            }else{
+              newUser.email = 'dummy@email.com'; //dummy
+            }
+            
+            newUser.facebook.token = token; // we will save the token that facebook provides to the user
+
+            newUser.password = 'dummyPassword';
 
             // save our user to the database
             newUser.save(function(err) {
@@ -108,6 +123,7 @@ module.exports = function(passport) {
 
   //Check JWT token
   passport.use(new JwtStrategy(opts, function(jwt_payload, done) {
+    console.log('Validating jwt payload: ' + JSON.stringify(jwt_payload));
     User.findOne({
       id: jwt_payload.id
     }, function(err, user) {
