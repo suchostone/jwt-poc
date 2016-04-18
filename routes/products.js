@@ -1,7 +1,7 @@
 var express = require('express');
 var Product = require('../models/product');
-var router = express.Router();
 var auth = require('../middlewares/auth');
+var router = express.Router();
 
 var products = [];
 

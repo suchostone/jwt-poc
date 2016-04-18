@@ -8,7 +8,7 @@ var config = require('./config')
 
 var PORT = process.env.PORT || 3000;
 
-var apiRoutes = require('./app/routes/index');
+var apiRoutes = require('./routes');
 
 app = express();
 
@@ -18,13 +18,17 @@ app.use(bodyParser.urlencoded({
 	extended: false
 }));
 
+require('./config/passport')(passport)
+
 // Log requests to console
 app.use(morgan('dev'));
 app.use(passport.initialize());
 app.use(express.static(path.join(__dirname, 'public')));
 
+app.use(passport.initialize());
+
 // Set url for API group routes
-app.use(require('./app/routes'));
+app.use(require('./routes'));
 
 mongoose.connect(config.db, function(err) {
 	app.listen((PORT), function() {

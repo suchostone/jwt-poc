@@ -2,7 +2,7 @@ var express = require('express');
 var passport = require('passport');
 var jwt = require('jsonwebtoken');
 var User = require('../models/user');
-var config = require('../../config');
+var config = require('../config');
 var auth = require('../middlewares/auth');
 var router = express.Router();
 
@@ -48,38 +48,25 @@ router.post('/api/register', function(req, res) {
 });
 
 // Authenticate the user and get a JSON Web Token to include in the header of future requests.
-router.post('/api/authenticate', function(req, res) {
-	User.findOne({
-		email: req.body.email
-	}, function(err, user) {
-		if (err) throw err;
-
+router.post('/api/authenticate', function(req, res, next) {
+	passport.authenticate('local-login', function(err, user, info) {
+		if (err) {
+			return next(err)
+		}
 		if (!user) {
-			res.send({
-				success: false,
-				message: 'Authentication failed. User not found.'
-			});
-		} else {
-			// Check if password matches
-			user.comparePassword(req.body.password, function(err, isMatch) {
-				if (isMatch && !err) {
-					// Create token if the password matched and no error was thrown
-					var token = jwt.sign(user, config.secret, {
-						expiresIn: 10080 // in seconds
-					});
-					res.json({
-						success: true,
-						token: 'JWT ' + token
-					});
-				} else {
-					res.send({
-						success: false,
-						message: 'Authentication failed. Passwords did not match.'
-					});
-				}
+			return res.json(401, {
+				error: 'message'
 			});
 		}
-	});
+
+		var token = jwt.sign(user, config.secret, {
+			expiresIn: 10080 // in seconds
+		});
+		res.json({
+			success: true,
+			token: 'JWT ' + token
+		});
+	})(req, res, next);
 });
 
 module.exports = router;
